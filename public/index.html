@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NICE CXone - Agent Desktop Simulator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: hashtag#f1f5f9;
+        }
+
+        .bot-bubble {
+            background-color: hashtag#f3e8ff;
+            color: hashtag#6b21a8;
+            border-left: 4px solid hashtag#a855f7;
+        }
+
+        .user-bubble {
+            background-color: hashtag#dcfce7;
+            color: hashtag#14532d;
+            border-left: 4px solid hashtag#22c55e;
+        }
+
+        .agent-bubble {
+            background-color: hashtag#dbeafe;
+            color: hashtag#1e40af;
+            border-right: 4px solid hashtag#3b82f6;
+            text-align: right;
+        }
+    </style>
+
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden">
+    <!-- Top Bar -->
+    <header class="bg-slate-900 text-white px-6 py-3 flex justify-between items-center shadow-md">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-headset text-2xl text-blue-400"></i>
+            <span class="font-bold text-lg tracking-wide">NICE CXone <span class="text-xs font-normal text-slate-400">|
+                    Agent Desktop Simulator</span></span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+                <span class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+                Agente Conectado (Online)
+            </span>
+        </div>
+    </header>
+    <!-- Main Workspace (3 Columns) -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- COLUNA 1: Gestão de Filas & Fila de Espera -->
+        <div class="w-1/4 bg-white border-r border-slate-200 flex flex-col">
+            <div class="p-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">
+                    <i class="fa-solid fa-layer-group text-slate-500 mr-1"></i> Filas de Atendimento
+                </h2>
+                <span id="queueBadge"
+                    class="bg-blue-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
+            </div>
+
+            <div id="queueList" class="flex-1 overflow-y-auto p-3 space-y-2">
+                <!-- Cards populados via JS WebSocket -->
+            </div>
+        </div>
+
+        <!-- COLUNA 2: Janela Principal de Chat -->
+        <div class="w-2/4 bg-slate-50 flex flex-col">
+
+            <!-- Estado Vazio -->
+            <div id="chatEmpty" class="flex-1 flex flex-col items-center justify-center text-slate-400">
+                <i class="fa-comments text-6xl mb-3 text-slate-300"></i>
+                <p class="text-sm">Selecione uma conversa na fila para iniciar o atendimento.</p>
+            </div>
+
+            <!-- Estado Ativo -->
+            <div id="chatContainer" class="hidden flex-1 flex flex-col h-full">
+                <!-- Header do Chat -->
+                <div class="bg-white px-5 py-3 border-b border-slate-200 flex justify-between items-center shadow-sm">
+                    <div>
+                        <h3 id="chatHeaderName" class="font-bold text-slate-800">Nome do Cliente</h3>
+                        <p id="chatHeaderSession" class="text-xs text-slate-500 font-mono"></p>
+                    </div>
+                    <button onclick​="closeCurrentSession()"
+                        class="text-red-600 hover:bg-red-50 border border-red-200 text-xs font-bold px-3 py-1.5 rounded transition flex items-center gap-1">
+                        <i class="fa-solid fa-circle-xmark"></i> Encerrar Sessão
+                    </button>
+                </div>
+
+                <!-- Histórico de Mensagens -->
+                <div id="chatHistory" class="flex-1 p-4 overflow-y-auto space-y-3 bg-[hashtag#e5e5f7] bg-opacity-20">
+                    <!-- Balões do Chat -->
+                </div>
+                <!-- Área de Envio de Resposta -->
+                <div class="bg-white p-3 border-t border-slate-200">
+                    <div class="flex gap-2">
+                        <textarea id="chatInput" rows="2"
+                            placeholder="Digite sua resposta para o cliente no WhatsApp..."
+                            class="flex-1 border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none"></textarea>
+                        <button onclick​="sendAgentReply()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 rounded-lg transition flex items-center justify-center">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA 3: Ficha de Contexto do Cliente -->
+        <div class="w-1/4 bg-white border-l border-slate-200 flex flex-col">
+            <div class="p-4 bg-slate-100 border-b border-slate-200">
+                <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">
+                    <i class="fa-solid fa-id-card text-slate-500 mr-1"></i> Ficha do Cliente
+                </h2>
+            </div>
+
+            <div id="contextPanel" class="p-5 overflow-y-auto space-y-4 hidden">
+                <div class="text-center pb-4 border-b">
+                    <div
+                        class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-2">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <h4 id="ctxName" class="font-bold text-slate-800 text-base">---</h4>
+                    <span
+                        class="inline-block mt-1 text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-semibold">
+                        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                    </span>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <span class="text-slate-400 font-bold uppercase block">Telefone</span>
+                        <span id="ctxPhone" class="text-slate-700 font-medium">---</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-bold uppercase block">CPF</span>
+                        <span id="ctxCpf" class="text-slate-700 font-medium">---</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-bold uppercase block">Email</span>
+                        <span id="ctxEmail" class="text-slate-700 font-medium">---</span>
+
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-bold uppercase block">Canal de Operação</span>
+                        <span id="ctxCanal" class="text-blue-600 font-bold">---</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-bold uppercase block">Messaging Session ID</span>
+                        <span id="ctxSession" class="text-slate-800 font-mono text-[11px] break-all">---</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Script WebSockets & UI Engine -->
+    <script>
+        let sessionsMap = new Map();
+        let activeSessionId = null;
+        let ws;
+
+        // Inicializa Conexão WebSocket com o Backend Node
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}`;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => console.log('Conectado ao backend de mensagens.');
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'INIT_STATE') {
+                    sessionsMap.clear();
+                    data.sessions.forEach(s => sessionsMap.set(s.identifier, s));
+                    renderQueue();
+                } else if (data.type === 'NEW_CONVERSATION') {
+                    sessionsMap.set(data.session.identifier, data.session);
+                    renderQueue();
+                } else if (data.type === 'NEW_USER_MESSAGE') {
+                    const session = sessionsMap.get(data.sessionId);
+                    if (session) {
+                        data.messages.forEach(m => session.history.push({ sender: 'user', text: m }));
+                        if (activeSessionId === data.sessionId) renderHistory();
+                    }
+                } else if (data.type === 'AGENT_REPLIED') {
+                    if (activeSessionId === data.sessionId) renderHistory();
+                } else if (data.type === 'CONVERSATION_ACCEPTED' || data.type === 'CONVERSATION_CLOSED') {
+                    renderQueue();
+                    if (activeSessionId === data.sessionId && data.type === 'CONVERSATION_CLOSED') {
+                        deselectSession();
+                    }
+                }
+            };
+
+            ws.onclose = () => setTimeout(initWebSocket, 3000); // Reconexão automática
+        }
+
+        function renderQueue() {
+            const list = document.getElementById('queueList');
+            list.innerHTML = '';
+            let count = 0;
+
+            sessionsMap.forEach((session, id) => {
+                if (session.status !== 'CLOSED') {
+                    count++;
+                    const card = document.createElement('div');
+                    const isSelected = activeSessionId === id;
+                    const isQueued = session.status === 'QUEUED';
+
+                    card.className = `p-3 rounded-lg border transition cursor-pointer ${isSelected ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-slate-50 border-slate-200'}`;
+                    card.onclick = () => selectSession(id);
+
+                    card.innerHTML = `
+ <div class="flex justify-between items-start mb-1">
+ <h4 class="font-bold text-xs text-slate-800 truncate">${session.contact.name}</h4>
+ <i class="fa-brands fa-whatsapp text-green-500 text-sm"></i>
+ </div>
+ <p class="text-[11px] text-slate-500 mb-2 truncate">Canal: ${session.contact.canalOperacao}</p>
+ ${isQueued ? `
+ <button onclick​="acceptSession(event, '${id}')" class="w-full bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-1 rounded transition">
+ Aceitar Atendimento
+ </button>
+ ` : `
+ <span class="block text-center text-[10px] bg-blue-100 text-blue-700 font-bold py-0.5 rounded">Em Atendimento</span>
+ `}
+ `;
+                    list.appendChild(card);
+                }
+            });
+
+            document.getElementById('queueBadge').innerText = count;
+        }
+
+        function selectSession(id) {
+            activeSessionId = id;
+            renderQueue();
+
+            const session = sessionsMap.get(id);
+            if (!session) return;
+
+            document.getElementById('chatEmpty').classList.add('hidden');
+            document.getElementById('chatContainer').classList.remove('hidden');
+            document.getElementById('contextPanel').classList.remove('hidden');
+
+            document.getElementById('chatHeaderName').innerText = session.contact.name;
+            document.getElementById('chatHeaderSession').innerText = `ID: ${session.identifier}`;
+
+            document.getElementById('ctxName').innerText = session.contact.name;
+            document.getElementById('ctxPhone').innerText = session.contact.phone;
+            document.getElementById('ctxCpf').innerText = session.contact.cpf;
+            document.getElementById('ctxEmail').innerText = session.contact.email;
+            document.getElementById('ctxCanal').innerText = session.contact.canalOperacao;
+            document.getElementById('ctxSession').innerText = session.identifier;
+
+            renderHistory();
+        }
+
+        function deselectSession() {
+            activeSessionId = null;
+            document.getElementById('chatEmpty').classList.remove('hidden');
+            document.getElementById('chatContainer').classList.add('hidden');
+            document.getElementById('contextPanel').classList.add('hidden');
+            renderQueue();
+        }
+
+        function renderHistory() {
+            const historyBox = document.getElementById('chatHistory');
+            historyBox.innerHTML = '';
+
+            const session = sessionsMap.get(activeSessionId);
+            if (!session) return;
+
+            session.history.forEach(item => {
+                const div = document.createElement('div');
+                if (item.sender === 'user') {
+                    div.className = 'user-bubble p-3 rounded-lg max-w-[80%] text-xs mr-auto shadow-sm';
+                    div.innerHTML = `<span class="block font-bold mb-1 text-[10px]">Cliente</span>${item.text}`;
+                } else if (item.sender === 'bot') {
+                    div.className = 'bot-bubble p-3 rounded-lg max-w-[80%] text-xs mx-auto text-center shadow-sm';
+                    div.innerHTML = `<span class="block font-bold mb-1 text-[10px]">Bot / Agentforce</span>${item.text}`;
+                } else if (item.sender === 'agent') {
+                    div.className = 'agent-bubble p-3 rounded-lg max-w-[80%] text-xs ml-auto shadow-sm';
+                    div.innerHTML = `<span class="block font-bold mb-1 text-[10px]">Atendente</span>${item.text}`;
+                }
+                historyBox.appendChild(div);
+            });
+
+            historyBox.scrollTop = historyBox.scrollHeight;
+        }
+
+        async function acceptSession(event, id) {
+            event.stopPropagation();
+            await fetch('/api/agent/accept', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId: id })
+            });
+            selectSession(id);
+        }
+
+        async function sendAgentReply() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !activeSessionId) return;
+
+            input.value = '';
+
+            await fetch('/api/agent/reply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId: activeSessionId, messageText: text })
+            });
+        }
+
+        async function closeCurrentSession() {
+            if (!activeSessionId || !confirm("Deseja encerrar a conversa?")) return;
+
+            await fetch('/api/agent/close', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId: activeSessionId })
+            });
+        }
+
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendAgentReply();
+            }
+        });
+
+        window.onload = initWebSocket;
+    </script>
+</body>
+
+</html>
