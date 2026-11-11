@@ -1,342 +1,609 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NICE CXone - Agent Desktop Simulator</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>NICE CXone | Agent Desktop Simulator</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana,
+                sans-serif;
+        }
+
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: hashtag#f1f5f9;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f2f5;
         }
 
-        .bot-bubble {
-            background-color: hashtag#f3e8ff;
-            color: hashtag#6b21a8;
-            border-left: 4px solid hashtag#a855f7;
+        /* Header Topo */
+        header {
+            background-color: #0b192c;
+            color: #fff;
+            padding: 12px 20px;
+            display: flex;
+            justify-content:
+                space-between;
+            align-items: center;
         }
 
-        .user-bubble {
-            background-color: hashtag#dcfce7;
-            color: hashtag#14532d;
-            border-left: 4px solid hashtag#22c55e;
+        .logo {
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .agent-bubble {
-            background-color: hashtag#dbeafe;
-            color: hashtag#1e40af;
-            border-right: 4px solid hashtag#3b82f6;
-            text-align: right;
+        .status-badge {
+            background-color: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Layout Principal 3 Colunas */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Coluna 1: Filas */
+        .sidebar {
+            width: 320px;
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: bold;
+            color: #374151;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cards-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap:
+                12px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            cursor:
+                pointer;
+            transition: all 0.2s;
+        }
+
+        .card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .card.active {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #1f2937;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .btn-accept {
+            width: 100%;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-accept:hover {
+            background-color: #059669;
+        }
+
+        /* Coluna 2: Chat Central */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8fafc;
+        }
+
+        .chat-header {
+            padding: 16px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display:
+                flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap:
+                12px;
+        }
+
+        .message-bubble {
+            max-width: 60%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height:
+                1.4;
+        }
+
+        .message-bubble.user {
+            align-self: flex-start;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+            border-bottom-left-radius: 2px;
+        }
+
+        .message-bubble.agent {
+            align-self: flex-end;
+            background-color: #2563eb;
+            color: #ffffff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-footer {
+            padding: 16px;
+            background-color: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .btn-send {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius:
+                6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-close {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius:
+                6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Coluna 3: Ficha do Cliente */
+        .info-panel {
+            width: 300px;
+            background-color: #ffffff;
+            border-left: 1px solid #e5e7eb;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 13px;
+            color: #0f172a;
+            word-break: break-all;
+        }
+
+        /* Indicador da assinatura Pub/Sub (Salesforce ➔ EC2) */
+        .header-badges {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pubsub-badge {
+            background-color: #64748b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .pubsub-badge.CONNECTED { background-color: #10b981; }
+        .pubsub-badge.RECONNECTING { background-color: #f59e0b; }
+        .pubsub-badge.ERROR { background-color: #ef4444; }
+
+        /* Barra de erro do envio/aceite (detalhes da API Salesforce) */
+        .error-bar {
+            display: none;
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border-top: 1px solid #fecaca;
+            padding: 8px 16px;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
         }
     </style>
-
 </head>
 
-<body class="h-screen flex flex-col overflow-hidden">
-    <!-- Top Bar -->
-    <header class="bg-slate-900 text-white px-6 py-3 flex justify-between items-center shadow-md">
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-headset text-2xl text-blue-400"></i>
-            <span class="font-bold text-lg tracking-wide">NICE CXone <span class="text-xs font-normal text-slate-400">|
-                    Agent Desktop Simulator</span></span>
-        </div>
-        <div class="flex items-center gap-4">
-            <span class="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
-                <span class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
-                Agente Conectado (Online)
-            </span>
+<body>
+
+    <header>
+        <div class="logo">🎧 NICE CXone <span>| Agent Desktop Simulator</span></div>
+        <div class="header-badges">
+            <div class="pubsub-badge" id="pubsub-badge" title="">Pub/Sub: aguardando</div>
+            <div class="status-badge">🟢 Agente Conectado (Online)</div>
         </div>
     </header>
-    <!-- Main Workspace (3 Columns) -->
-    <div class="flex flex-1 overflow-hidden">
 
-        <!-- COLUNA 1: Gestão de Filas & Fila de Espera -->
-        <div class="w-1/4 bg-white border-r border-slate-200 flex flex-col">
-            <div class="p-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
-                <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">
-                    <i class="fa-solid fa-layer-group text-slate-500 mr-1"></i> Filas de Atendimento
-                </h2>
-                <span id="queueBadge"
-                    class="bg-blue-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
+    <main>
+        <!-- Coluna 1: Lista de Fila -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>FILAS DE ATENDIMENTO</span>
+                <span id="queue-count">0</span>
             </div>
-
-            <div id="queueList" class="flex-1 overflow-y-auto p-3 space-y-2">
-                <!-- Cards populados via JS WebSocket -->
+            <div class="cards-container" id="cards-container">
+                <!-- Cards inseridos via JS -->
             </div>
         </div>
 
-        <!-- COLUNA 2: Janela Principal de Chat -->
-        <div class="w-2/4 bg-slate-50 flex flex-col">
-
-            <!-- Estado Vazio -->
-            <div id="chatEmpty" class="flex-1 flex flex-col items-center justify-center text-slate-400">
-                <i class="fa-comments text-6xl mb-3 text-slate-300"></i>
-                <p class="text-sm">Selecione uma conversa na fila para iniciar o atendimento.</p>
+        <!-- Coluna 2: Chat -->
+        <div class="chat-area">
+            <div class="chat-header" id="chat-header" style="display: none;">
+                <div>
+                    <h3 id="chat-client-name">Cliente</h3>
+                    <span style="font-size: 12px; color: #64748b;" id="chat-session-id">ID: -</span>
+                </div>
+                <button class="btn-close" onclick="encerrarSessaoAtual()">✖ Encerar Sessão</button>
             </div>
 
-            <!-- Estado Ativo -->
-            <div id="chatContainer" class="hidden flex-1 flex flex-col h-full">
-                <!-- Header do Chat -->
-                <div class="bg-white px-5 py-3 border-b border-slate-200 flex justify-between items-center shadow-sm">
-                    <div>
-                        <h3 id="chatHeaderName" class="font-bold text-slate-800">Nome do Cliente</h3>
-                        <p id="chatHeaderSession" class="text-xs text-slate-500 font-mono"></p>
-                    </div>
-                    <button onclick​="closeCurrentSession()"
-                        class="text-red-600 hover:bg-red-50 border border-red-200 text-xs font-bold px-3 py-1.5 rounded transition flex items-center gap-1">
-                        <i class="fa-solid fa-circle-xmark"></i> Encerrar Sessão
-                    </button>
-                </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="empty-state" id="empty-state">Selecione ou aceite um atendimento ao lado para iniciar.</div>
+            </div>
 
-                <!-- Histórico de Mensagens -->
-                <div id="chatHistory" class="flex-1 p-4 overflow-y-auto space-y-3 bg-[hashtag#e5e5f7] bg-opacity-20">
-                    <!-- Balões do Chat -->
-                </div>
-                <!-- Área de Envio de Resposta -->
-                <div class="bg-white p-3 border-t border-slate-200">
-                    <div class="flex gap-2">
-                        <textarea id="chatInput" rows="2"
-                            placeholder="Digite sua resposta para o cliente no WhatsApp..."
-                            class="flex-1 border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none"></textarea>
-                        <button onclick​="sendAgentReply()"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 rounded-lg transition flex items-center justify-center">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
+            <div class="error-bar" id="error-bar"></div>
+
+            <div class="chat-footer" id="chat-footer" style="display: none;">
+                <input type="text" id="input-msg" class="chat-input" placeholder="Digite a resposta do atendente..."
+                    onkeypress="handleKeyPress(event)">
+                <button class="btn-send" onclick="enviarRespostaAtendente()">Enviar</button>
             </div>
         </div>
 
-        <!-- COLUNA 3: Ficha de Contexto do Cliente -->
-        <div class="w-1/4 bg-white border-l border-slate-200 flex flex-col">
-            <div class="p-4 bg-slate-100 border-b border-slate-200">
-                <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wider">
-                    <i class="fa-solid fa-id-card text-slate-500 mr-1"></i> Ficha do Cliente
-                </h2>
+        <!-- Coluna 3: Ficha do Cliente -->
+        <div class="info-panel" id="info-panel">
+            <h4 style="color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">FICHA DO CLIENTE</h4>
+            <div class="info-group">
+                <span class="info-label">Nome do Cliente</span>
+                <span class="info-value" id="info-name">-</span>
             </div>
-
-            <div id="contextPanel" class="p-5 overflow-y-auto space-y-4 hidden">
-                <div class="text-center pb-4 border-b">
-                    <div
-                        class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-2">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <h4 id="ctxName" class="font-bold text-slate-800 text-base">---</h4>
-                    <span
-                        class="inline-block mt-1 text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-semibold">
-                        <i class="fa-brands fa-whatsapp"></i> WhatsApp
-                    </span>
-                </div>
-
-                <div class="space-y-3 text-xs">
-                    <div>
-                        <span class="text-slate-400 font-bold uppercase block">Telefone</span>
-                        <span id="ctxPhone" class="text-slate-700 font-medium">---</span>
-                    </div>
-                    <div>
-                        <span class="text-slate-400 font-bold uppercase block">CPF</span>
-                        <span id="ctxCpf" class="text-slate-700 font-medium">---</span>
-                    </div>
-                    <div>
-                        <span class="text-slate-400 font-bold uppercase block">Email</span>
-                        <span id="ctxEmail" class="text-slate-700 font-medium">---</span>
-
-                    </div>
-                    <div>
-                        <span class="text-slate-400 font-bold uppercase block">Canal de Operação</span>
-                        <span id="ctxCanal" class="text-blue-600 font-bold">---</span>
-                    </div>
-                    <div>
-                        <span class="text-slate-400 font-bold uppercase block">Messaging Session ID</span>
-                        <span id="ctxSession" class="text-slate-800 font-mono text-[11px] break-all">---</span>
-                    </div>
-                </div>
+            <div class="info-group">
+                <span class="info-label">Telefone / Identificador</span>
+                <span class="info-value" id="info-phone">-</span>
+            </div>
+            <div class="info-group">
+                <span class="info-label">CPF</span>
+                <span class="info-value" id="info-cpf">-</span>
+            </div>
+            <div class="info-group">
+                <span class="info-label">E-mail</span>
+                <span class="info-value" id="info-email">-</span>
+            </div>
+            <div class="info-group">
+                <span class="info-label">Canal de Operação</span>
+                <span class="info-value" id="info-canal" style="color: #2563eb; font-weight: bold;">-</span>
+            </div>
+            <div class="info-group">
+                <span class="info-label">Messaging Session ID</span>
+                <span class="info-value" id="info-session">-</span>
             </div>
         </div>
-    </div>
-    <!-- Script WebSockets & UI Engine -->
+    </main>
     <script>
-        let sessionsMap = new Map();
-        let activeSessionId = null;
         let ws;
+        let activeSessionsMap = new Map();
+        let currentSessionId = null;
 
-        // Inicializa Conexão WebSocket com o Backend Node
+        // Inicializa Conexão WebSocket com a EC2
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}`;
+            ws = new WebSocket(`${protocol}//${window.location.host}`);
 
-            ws = new WebSocket(wsUrl);
-
-            ws.onopen = () => console.log('Conectado ao backend de mensagens.');
+            ws.onopen = () => console.log("%c[WEBSOCKET] Conectado ao Servidor Gateway", "color: #10b981; font-weight:bold; ");
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
 
+                // --- RECEBER LOGS DO BACKEND NO CONSOLE DO CHROME ---
+                if (data.type === 'DEBUG_LOG') {
+                    if (data.level === 'error') {
+                        console.error('[EC2 BACKEND ERRO] 🔴', data.text);
+                    } else {
+                        console.log('%c[EC2 BACKEND LOG] 🔵 ' + data.text, 'color: #007bff; font-weight: bold;');
+                    }
+                    return;
+                }
+
+                // --- EVENTOS DO SITEMA ---
                 if (data.type === 'INIT_STATE') {
-                    sessionsMap.clear();
-                    data.sessions.forEach(s => sessionsMap.set(s.identifier, s));
-                    renderQueue();
-                } else if (data.type === 'NEW_CONVERSATION') {
-                    sessionsMap.set(data.session.identifier, data.session);
-                    renderQueue();
-                } else if (data.type === 'NEW_USER_MESSAGE') {
-                    const session = sessionsMap.get(data.sessionId);
+                    activeSessionsMap.clear();
+                    data.sessions.forEach(s => activeSessionsMap.set(s.identifier, s));
+                    renderUI();
+                }
+
+                if (data.type === 'NEW_CONVERSATION') {
+                    activeSessionsMap.set(data.session.identifier, data.session);
+                    renderUI();
+                }
+
+                if (data.type === 'NEW_USER_MESSAGE') {
+                    const session = activeSessionsMap.get(data.sessionId);
                     if (session) {
                         data.messages.forEach(m => session.history.push({ sender: 'user', text: m }));
-                        if (activeSessionId === data.sessionId) renderHistory();
+                        if (currentSessionId === data.sessionId) renderMessages();
                     }
-                } else if (data.type === 'AGENT_REPLIED') {
-                    if (activeSessionId === data.sessionId) renderHistory();
-                } else if (data.type === 'CONVERSATION_ACCEPTED' || data.type === 'CONVERSATION_CLOSED') {
-                    renderQueue();
-                    if (activeSessionId === data.sessionId && data.type === 'CONVERSATION_CLOSED') {
-                        deselectSession();
+                }
+
+                // Resposta confirmada pelo Salesforce: entra no histórico local (o backend já a guardou)
+                if (data.type === 'AGENT_REPLIED') {
+                    const session = activeSessionsMap.get(data.sessionId);
+                    if (session) {
+                        session.history.push({ sender: 'agent', text: data.text });
+                        if (currentSessionId === data.sessionId) renderMessages();
+                    }
+                }
+
+                // Estado da assinatura Pub/Sub no backend
+                if (data.type === 'PUBSUB_STATUS') {
+                    const badge = document.getElementById('pubsub-badge');
+                    const labels = { CONNECTED: '🟢 Pub/Sub conectado', RECONNECTING: '🟡 Pub/Sub reconectando', ERROR: '🔴 Pub/Sub erro', DISABLED: '⚪ Pub/Sub desativado' };
+                    badge.className = `pubsub-badge ${data.state}`;
+                    badge.innerText = labels[data.state] || data.state;
+                    badge.title = `${data.topic}${data.detail ? '\n' + data.detail : ''}`;
+                }
+
+                if (data.type === 'CONVERSATION_ACCEPTED' || data.type === 'CONVERSATION_CLOSED') {
+                    const session = activeSessionsMap.get(data.sessionId);
+                    if (session) {
+                        session.status = data.type === 'CONVERSATION_ACCEPTED' ? 'ACTIVE' : 'CLOSED';
+                        renderUI();
                     }
                 }
             };
 
-            ws.onclose = () => setTimeout(initWebSocket, 3000); // Reconexão automática
+            ws.onclose = () => setTimeout(initWebSocket, 3000);
         }
 
-        function renderQueue() {
-            const list = document.getElementById('queueList');
-            list.innerHTML = '';
-            let count = 0;
+        // --- CHAMADAS API (FETCH) PARA OS BOTÕES ---
 
-            sessionsMap.forEach((session, id) => {
-                if (session.status !== 'CLOSED') {
-                    count++;
-                    const card = document.createElement('div');
-                    const isSelected = activeSessionId === id;
-                    const isQueued = session.status === 'QUEUED';
-
-                    card.className = `p-3 rounded-lg border transition cursor-pointer ${isSelected ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-slate-50 border-slate-200'}`;
-                    card.onclick = () => selectSession(id);
-
-                    card.innerHTML = `
- <div class="flex justify-between items-start mb-1">
- <h4 class="font-bold text-xs text-slate-800 truncate">${session.contact.name}</h4>
- <i class="fa-brands fa-whatsapp text-green-500 text-sm"></i>
- </div>
- <p class="text-[11px] text-slate-500 mb-2 truncate">Canal: ${session.contact.canalOperacao}</p>
- ${isQueued ? `
- <button onclick​="acceptSession(event, '${id}')" class="w-full bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-1 rounded transition">
- Aceitar Atendimento
- </button>
- ` : `
- <span class="block text-center text-[10px] bg-blue-100 text-blue-700 font-bold py-0.5 rounded">Em Atendimento</span>
- `}
- `;
-                    list.appendChild(card);
-                }
-            });
-
-            document.getElementById('queueBadge').innerText = count;
-        }
-
-        function selectSession(id) {
-            activeSessionId = id;
-            renderQueue();
-
-            const session = sessionsMap.get(id);
-            if (!session) return;
-
-            document.getElementById('chatEmpty').classList.add('hidden');
-            document.getElementById('chatContainer').classList.remove('hidden');
-            document.getElementById('contextPanel').classList.remove('hidden');
-
-            document.getElementById('chatHeaderName').innerText = session.contact.name;
-            document.getElementById('chatHeaderSession').innerText = `ID: ${session.identifier}`;
-
-            document.getElementById('ctxName').innerText = session.contact.name;
-            document.getElementById('ctxPhone').innerText = session.contact.phone;
-            document.getElementById('ctxCpf').innerText = session.contact.cpf;
-            document.getElementById('ctxEmail').innerText = session.contact.email;
-            document.getElementById('ctxCanal').innerText = session.contact.canalOperacao;
-            document.getElementById('ctxSession').innerText = session.identifier;
-
-            renderHistory();
-        }
-
-        function deselectSession() {
-            activeSessionId = null;
-            document.getElementById('chatEmpty').classList.remove('hidden');
-            document.getElementById('chatContainer').classList.add('hidden');
-            document.getElementById('contextPanel').classList.add('hidden');
-            renderQueue();
-        }
-
-        function renderHistory() {
-            const historyBox = document.getElementById('chatHistory');
-            historyBox.innerHTML = '';
-
-            const session = sessionsMap.get(activeSessionId);
-            if (!session) return;
-
-            session.history.forEach(item => {
-                const div = document.createElement('div');
-                if (item.sender === 'user') {
-                    div.className = 'user-bubble p-3 rounded-lg max-w-[80%] text-xs mr-auto shadow-sm';
-                    div.innerHTML = `<span class="block font-bold mb-1 text-[10px]">Cliente</span>${item.text}`;
-                } else if (item.sender === 'bot') {
-                    div.className = 'bot-bubble p-3 rounded-lg max-w-[80%] text-xs mx-auto text-center shadow-sm';
-                    div.innerHTML = `<span class="block font-bold mb-1 text-[10px]">Bot / Agentforce</span>${item.text}`;
-                } else if (item.sender === 'agent') {
-                    div.className = 'agent-bubble p-3 rounded-lg max-w-[80%] text-xs ml-auto shadow-sm';
-                    div.innerHTML = `<span class="block font-bold mb-1 text-[10px]">Atendente</span>${item.text}`;
-                }
-                historyBox.appendChild(div);
-            });
-
-            historyBox.scrollTop = historyBox.scrollHeight;
-        }
-
-        async function acceptSession(event, id) {
-            event.stopPropagation();
-            await fetch('/api/agent/accept', {
+        /**
+         * POST JSON para o backend. Em caso de erro devolve a mensagem detalhada
+         * (inclui salesforceDetails quando a falha veio da API do Salesforce).
+         */
+        async function postJson(url, body) {
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sessionId: id })
+                body: JSON.stringify(body)
             });
-            selectSession(id);
-        }
-
-        async function sendAgentReply() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if (!text || !activeSessionId) return;
-
-            input.value = '';
-
-            await fetch('/api/agent/reply', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sessionId: activeSessionId, messageText: text })
-            });
-        }
-
-        async function closeCurrentSession() {
-            if (!activeSessionId || !confirm("Deseja encerrar a conversa?")) return;
-
-            await fetch('/api/agent/close', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sessionId: activeSessionId })
-            });
-        }
-
-        document.getElementById('chatInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendAgentReply();
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                const details = data.salesforceDetails ? '\n' + JSON.stringify(data.salesforceDetails) : '';
+                throw new Error(`${data.error || 'HTTP ' + res.status}${details}`);
             }
-        });
+            return data;
+        }
 
-        window.onload = initWebSocket;
+        function mostrarErro(msg) {
+            const bar = document.getElementById('error-bar');
+            bar.innerText = msg ? '⚠ ' + msg : '';
+            bar.style.display = msg ? 'block' : 'none';
+        }
+
+        async function aceitarAtendimento(sessionId) {
+            mostrarErro('');
+            try {
+                await postJson('/api/agent/accept', { sessionId });
+                selecionarSessao(sessionId);
+            } catch (err) {
+                console.error("Erro ao aceitar atendimento:", err.message);
+                mostrarErro('Falha ao aceitar: ' + err.message);
+            }
+        }
+
+        async function enviarRespostaAtendente() {
+            const input = document.getElementById('input-msg');
+            const text = input.value.trim();
+            if (!text || !currentSessionId) return;
+
+            mostrarErro('');
+            input.value = ''; // Limpa input; a bolha aparece ao receber AGENT_REPLIED
+            try {
+                await postJson('/api/agent/reply', { sessionId: currentSessionId, messageText: text });
+            } catch (err) {
+                input.value = text; // devolve o texto para reenvio
+                console.error("Erro ao enviar mensagem:", err.message);
+                mostrarErro('Falha ao enviar: ' + err.message);
+            }
+        }
+
+        async function encerrarSessaoAtual() {
+            if (!currentSessionId) return;
+            mostrarErro('');
+            try {
+                await postJson('/api/agent/close', { sessionId: currentSessionId });
+            } catch (err) {
+                console.error("Erro ao encerrar sessão:", err.message);
+                mostrarErro('Encerrada localmente, mas o Salesforce falhou: ' + err.message);
+            }
+            currentSessionId = null;
+            renderUI();
+        }
+
+        /** Escapa texto vindo do Salesforce antes de usar em innerHTML. */
+        function escapeHtml(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') enviarRespostaAtendente();
+        }
+
+        function selecionarSessao(sessionId) {
+            currentSessionId = sessionId;
+            renderUI();
+        }
+
+        // --- RENDERIZAÇÃO DA INTERFACE ---
+
+        function renderUI() {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+
+            let count = 0;
+            activeSessionsMap.forEach((session, id) => {
+                if (session.status === 'CLOSED') return;
+                count++;
+
+                const card = document.createElement('div');
+                card.className = `card ${currentSessionId === id ? 'active' : ''}`;
+                card.onclick = () => selecionarSessao(id);
+
+                card.innerHTML = `
+        <div class="card-header">
+            <span>${escapeHtml(session.contact.name)}</span>
+            <span>💬</span>
+        </div>
+        <div class="card-sub">Canal: "${escapeHtml(session.contact.canalOperacao)}"</div>
+        ${session.status === 'QUEUED'
+                        ? `<button class="btn-accept" onclick="event.stopPropagation(); aceitarAtendimento('${escapeHtml(id)}')">Aceitar
+            Atendimento</button>`
+                        : `<span style="font-size:11px; color:#10b981; font-weight:bold;">● Em Atendimento</span>`
+                    }
+        `;
+                container.appendChild(card);
+            });
+            document.getElementById('queue-count').innerText = count;
+
+            // Atualiza área de chat e ficha
+            const currentSession = activeSessionsMap.get(currentSessionId);
+            if (currentSession && currentSession.status !== 'CLOSED') {
+                document.getElementById('chat-header').style.display = 'flex';
+                document.getElementById('chat-footer').style.display = 'flex';
+
+                document.getElementById('chat-client-name').innerText = currentSession.contact.name;
+                document.getElementById('chat-session-id').innerText = `ID: ${currentSession.identifier}`;
+
+                // Ficha
+                document.getElementById('info-name').innerText = currentSession.contact.name;
+                document.getElementById('info-phone').innerText = currentSession.contact.phone;
+                document.getElementById('info-cpf').innerText = currentSession.contact.cpf;
+                document.getElementById('info-email').innerText = currentSession.contact.email;
+                document.getElementById('info-canal').innerText = currentSession.contact.canalOperacao;
+                document.getElementById('info-session').innerText = currentSession.identifier;
+
+                renderMessages();
+            } else {
+                document.getElementById('chat-header').style.display = 'none';
+                document.getElementById('chat-footer').style.display = 'none';
+                document.getElementById('chat-messages').innerHTML = '<div class="empty-state">Selecione ou aceite um atendimento ao lado para iniciar.</div>';
+
+                // Limpa Ficha
+                ['info-name', 'info-phone', 'info-cpf', 'info-email', 'info-canal', 'info-session'].forEach(id =>
+                    document.getElementById(id).innerText = '-');
+            }
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+
+            const session = activeSessionsMap.get(currentSessionId);
+            if (!session) return;
+
+            session.history.forEach(msg => {
+                const bubble = document.createElement('div');
+                bubble.className = `message-bubble ${msg.sender === 'agent' ? 'agent' : 'user'}`;
+                bubble.innerText = msg.text;
+                container.appendChild(bubble);
+            });
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Iniciar
+        initWebSocket();
     </script>
 </body>
 
